@@ -1,8 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const roomRoutes = require('./routes/rooms');
 const path = require('path');
-const { sequelize } = require('./models/Room');
+const roomRoutes = require('./routes/rooms');
 
 const app = express();
 
@@ -14,31 +13,38 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 console.log('CORS enabled for https://cinemadb-iotl.onrender.com');
 
-// Middleware to parse JSON bodies
 app.use(express.json());
-console.log('JSON body parsing enabled');
 
-// Middleware to log all requests
+// Debug middleware for all requests
 app.use((req, res, next) => {
   console.log(`Received ${req.method} request for ${req.url}`);
+  console.log('Request headers:', req.headers);
+  console.log('Request body:', req.body);
   next();
 });
 
-// Middleware for /api routes with debug logs
-app.use('/api', (req, res, next) => {
-  console.log('Entering /api route');
-  next();
-}, roomRoutes);
+// Use room routes
+app.use('/api', roomRoutes);
 
-// Middleware for /uploads with debug logs
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+// Catch-all handler for React routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+});
+
+// Debug log for image requests
 app.use('/uploads', (req, res, next) => {
   console.log(`Received request for image: ${req.url}`);
+  console.log('Image request headers:', req.headers);
   next();
 }, express.static(path.join(__dirname, 'uploads')));
 
-// Test route for server health check
+// Add a test route to check if the server is responding
 app.get('/test', (req, res) => {
   console.log('Test route accessed');
   res.json({ message: 'Server is running and accessible' });
@@ -46,24 +52,15 @@ app.get('/test', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('An error occurred:', err);
+  console.error('An error occurred:', err.message);
+  console.error('Stack trace:', err.stack);
   res.status(500).json({ error: 'An internal server error occurred' });
 });
 
-// Start server and connect to database
 const PORT = process.env.PORT || 10000;
-
-sequelize.sync()
-  .then(() => {
-    console.log('Database synced successfully');
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    });
-  })
-  .catch(error => {
-    console.error('Unable to sync database:', error);
-  });
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
