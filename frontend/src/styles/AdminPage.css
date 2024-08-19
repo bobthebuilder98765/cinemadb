@@ -1,0 +1,29 @@
+.admin-page {
+    padding: 20px;
+}
+
+.room-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.room-item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.room-item img {
+    max-width: 100%;
+    height: auto;
+}
+
+.room-item button {
+    background-color: #ff4136;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-top: 10px;
+}
