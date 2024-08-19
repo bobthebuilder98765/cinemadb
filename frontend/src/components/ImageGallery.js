@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/ImageGallery.css';
 
+// Use the RENDER_EXTERNAL_URL environment variable
+const API_URL = process.env.REACT_APP_API_URL || '';
+
 const ImageGallery = () => {
     const [rooms, setRooms] = useState([]);
     const [sortBy, setSortBy] = useState('number');
@@ -12,7 +15,7 @@ const ImageGallery = () => {
 
     const fetchRooms = async () => {
         try {
-            const response = await axios.get('/api/rooms');
+            const response = await axios.get(`${API_URL}/api/rooms`);
             setRooms(response.data);
         } catch (error) {
             console.error('Failed to fetch rooms:', error);
@@ -42,7 +45,7 @@ const ImageGallery = () => {
                     <div key={room.id} className="room-item">
                         <h3>Room {room.number}</h3>
                         <img
-                            src={`/uploads/${room.image_path}`}
+                            src={`${API_URL}/uploads/${room.image_path}`}
                             alt={`Room ${room.number}`}
                             onError={(e) => {
                                 e.target.onerror = null;
